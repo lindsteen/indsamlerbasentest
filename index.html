@@ -629,6 +629,22 @@
                     updateTotals();
                 });
             });
+
+            // Update "Er returneret" column based on cash input
+            cashInputs.forEach(function(input) {
+                input.addEventListener('input', function() {
+                    const row = input.closest('tr');
+                    const returnedCell = row.querySelector('.col-returned');
+                    const value = input.value.trim();
+                    returnedCell.textContent = value ? 'Ja' : 'Nej';
+                });
+
+                // Trigger once on load in case some inputs already have values
+                const row = input.closest('tr');
+                const returnedCell = row.querySelector('.col-returned');
+                const value = input.value.trim();
+                returnedCell.textContent = value ? 'Ja' : 'Nej';
+            });
         });
 
         // Function to update totals in footer
@@ -656,4 +672,5 @@
     </script>
 </body>
 </html>
+
 
