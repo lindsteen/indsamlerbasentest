@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indsamling Table</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Verdana, sans-serif;
+            font-size: 10.7px;
+            background-color: #ffffff;
+            color: #373538;
+            padding: 20px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        .fundraising-table {
+            width: 1400px;
+            min-width: 1400px;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        /* Header styling */
+        .fundraising-table thead {
+            background-color: #ffffff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .fundraising-table th {
+            padding: 15px 8px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 10.7px;
+            color: #484748;
+            border-right: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease;
+            background-color: #ffffff;
+        }
+
+        .fundraising-table th:hover {
+            background-color: #f8f8f8;
+        }
+
+        .fundraising-table th.sortable::after {
+            content: '';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 6px solid #ccc;
+            opacity: 0.5;
+        }
+
+        .fundraising-table th.sort-asc::after {
+            border-bottom: 6px solid #e30a0b;
+            border-top: none;
+            opacity: 1;
+        }
+
+        .fundraising-table th.sort-desc::after {
+            border-top: 6px solid #e30a0b;
+            border-bottom: none;
+            opacity: 1;
+        }
+
+        /* Row styling */
+        .fundraising-table tbody tr:nth-child(odd) {
+            background-color: #f5f5f6;
+        }
+
+        .fundraising-table tbody tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+        .fundraising-table tbody tr:hover {
+            background-color: #e8f4f8;
+        }
+
+        .fundraising-table td {
+            padding: 10px 8px;
+            border-right: 1px solid #f0f0f0;
+            font-size: 12.2px;
+            vertical-align: middle;
+        }
+
+        /* Specific column styling */
+        .col-qr-id {
+            width: 80px;
+        }
+
+        .col-collector {
+            width: 180px;
+            font-weight: bold;
+        }
+
+        .col-cash {
+            width: 140px;
+        }
+
+        .col-next-year {
+            width: 160px;
+            text-align: center;
+        }
+
+        .col-returned {
+            width: 120px;
+            text-align: center;
+        }
+
+        .col-mobilepay {
+            width: 120px;
+            text-align: right;
+        }
+
+        .col-digital {
+            width: 160px;
+            text-align: right;
+        }
+
+        .col-total {
+            width: 120px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .col-route-id {
+            width: 80px;
+        }
+
+        .col-min-side {
+            width: 100px;
+            text-align: center;
+        }
+
+        /* Form elements */
+        .cash-input {
+            width: 60px;
+            padding: 4px 8px;
+            border: 1px solid #373538;
+            border-radius: 3px;
+            background-color: white;
+            font-size: 12px;
+            text-align: right;
+            font-family: Verdana, sans-serif;
+        }
+
+        .cash-input:focus {
+            outline: none;
+            border-color: #e30a0b;
+            box-shadow: 0 0 0 2px rgba(227, 10, 11, 0.2);
+        }
+
+        .checkbox-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #373538;
+            border-radius: 3px;
+            background-color: white;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox:hover {
+            border-color: #e30a0b;
+        }
+
+        .custom-checkbox.checked {
+            background-color: #373538;
+            border-color: #373538;
+        }
+
+        .custom-checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            line-height: 1;
+        }
+
+        .action-link {
+            color: #e30a0b;
+            text-decoration: none;
+            font-size: 10.7px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+            color: #b8080a;
+        }
+
+        .action-icon {
+            width: 12px;
+            height: 12px;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        /* Footer row */
+        .footer-row {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            border-top: 2px solid #c9c5c5;
+        }
+
+        .footer-row td {
+            padding: 15px 8px;
+            font-size: 12.2px;
+            background-color: #f8f8f8;
+        }
+
+        /* Help icon */
+        .help-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-color: #e30a0b;
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            line-height: 16px;
+            font-size: 10px;
+            margin-left: 4px;
+            cursor: help;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="table-wrapper">
+        <table class="fundraising-table">
+            <thead>
+                <tr>
+                    <th class="sortable col-qr-id" data-column="0" data-type="text">QR ID</th>
+                    <th class="sortable col-collector" data-column="1" data-type="text">Indsamler</th>
+                    <th class="sortable col-cash" data-column="2" data-type="cash">Kontanter</th>
+                    <th class="sortable col-next-year" data-column="3" data-type="boolean">Vil have ruten næste år</th>
+                    <th class="sortable col-returned" data-column="4" data-type="boolean">Er returneret</th>
+                    <th class="sortable col-mobilepay" data-column="5" data-type="number">MobilePay <span class="help-icon">?</span></th>
+                    <th class="sortable col-digital" data-column="6" data-type="number">Digital indsamling</th>
+                    <th class="sortable col-total" data-column="7" data-type="number">Samlet beløb</th>
+                    <th class="sortable col-route-id" data-column="8" data-type="text">Rute ID</th>
+                    <th class="sortable col-min-side" data-column="9" data-type="text">Min Side</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-qr-id">-</td>
+                    <td class="col-collector">Julie Madsen</td>
+                    <td class="col-cash">
+                        <input type="number" class="cash-input" value="2342"> kr.
+                    </td>
+                    <td class="col-next-year">
+                        <div class="checkbox-container">
+                            <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
+                        </div>
+                    </td>
+                    <td class="col-returned">Ja</td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">2342 kr.</td>
+                    <td class="col-route-id">-</td>
+                    <td class="col-min-side">
+                        <a href="#" class="action-link">
+                            Åbn
+                            <svg class="action-icon" viewBox="0 0 14 14">
+                                <path d="M8.60369 10.0443H9.47037C11.2037 10.0443 12.6271 8.62661 12.6271 6.88751C12.6271 5.15415 11.2095 3.73074 9.47037 3.73074H8.60369" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5.16563 3.73074H4.30469C2.5656 3.73074 1.14792 5.14841 1.14792 6.88751C1.14792 8.62087 2.5656 10.0443 4.30469 10.0443H5.16563" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4.59167 6.88751H9.18335" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-qr-id">-</td>
+                    <td class="col-collector">Sara Eriksen</td>
+                    <td class="col-cash">
+                        <input type="number" class="cash-input" value=""> kr.
+                    </td>
+                    <td class="col-next-year">
+                        <div class="checkbox-container">
+                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                        </div>
+                    </td>
+                    <td class="col-returned">Nej</td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">0 kr.</td>
+                    <td class="col-route-id">-</td>
+                    <td class="col-min-side">
+                        <a href="#" class="action-link">
+                            Åbn
+                            <svg class="action-icon" viewBox="0 0 14 14">
+                                <path d="M8.60369 10.0443H9.47037C11.2037 10.0443 12.6271 8.62661 12.6271 6.88751C12.6271 5.15415 11.2095 3.73074 9.47037 3.73074H8.60369" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5.16563 3.73074H4.30469C2.5656 3.73074 1.14792 5.14841 1.14792 6.88751C1.14792 8.62087 2.5656 10.0443 4.30469 10.0443H5.16563" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4.59167 6.88751H9.18335" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-qr-id">-</td>
+                    <td class="col-collector">Jonas Bjerre</td>
+                    <td class="col-cash">
+                        <input type="number" class="cash-input" value=""> kr.
+                    </td>
+                    <td class="col-next-year">
+                        <div class="checkbox-container">
+                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                        </div>
+                    </td>
+                    <td class="col-returned">Nej</td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">0 kr.</td>
+                    <td class="col-route-id">-</td>
+                    <td class="col-min-side">
+                        <a href="#" class="action-link">
+                            Åbn
+                            <svg class="action-icon" viewBox="0 0 14 14">
+                                <path d="M8.60369 10.0443H9.47037C11.2037 10.0443 12.6271 8.62661 12.6271 6.88751C12.6271 5.15415 11.2095 3.73074 9.47037 3.73074H8.60369" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5.16563 3.73074H4.30469C2.5656 3.73074 1.14792 5.14841 1.14792 6.88751C1.14792 8.62087 2.5656 10.0443 4.30469 10.0443H5.16563" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4.59167 6.88751H9.18335" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-qr-id">-</td>
+                    <td class="col-collector">Thomas Rasmussen</td>
+                    <td class="col-cash">
+                        <input type="number" class="cash-input" value="1422"> kr.
+                    </td>
+                    <td class="col-next-year">
+                        <div class="checkbox-container">
+                            <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
+                        </div>
+                    </td>
+                    <td class="col-returned">Ja</td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">1422 kr.</td>
+                    <td class="col-route-id">-</td>
+                    <td class="col-min-side">
+                        <a href="#" class="action-link">
+                            Åbn
+                            <svg class="action-icon" viewBox="0 0 14 14">
+                                <path d="M8.60369 10.0443H9.47037C11.2037 10.0443 12.6271 8.62661 12.6271 6.88751C12.6271 5.15415 11.2095 3.73074 9.47037 3.73074H8.60369" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5.16563 3.73074H4.30469C2.5656 3.73074 1.14792 5.14841 1.14792 6.88751C1.14792 8.62087 2.5656 10.0443 4.30469 10.0443H5.16563" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4.59167 6.88751H9.18335" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-qr-id">-</td>
+                    <td class="col-collector">Mikkel Sørensen</td>
+                    <td class="col-cash">
+                        <input type="number" class="cash-input" value="2342"> kr.
+                    </td>
+                    <td class="col-next-year">
+                        <div class="checkbox-container">
+                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                        </div>
+                    </td>
+                    <td class="col-returned">Ja</td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">2342 kr.</td>
+                    <td class="col-route-id">-</td>
+                    <td class="col-min-side">
+                        <a href="#" class="action-link">
+                            Åbn
+                            <svg class="action-icon" viewBox="0 0 14 14">
+                                <path d="M8.60369 10.0443H9.47037C11.2037 10.0443 12.6271 8.62661 12.6271 6.88751C12.6271 5.15415 11.2095 3.73074 9.47037 3.73074H8.60369" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5.16563 3.73074H4.30469C2.5656 3.73074 1.14792 5.14841 1.14792 6.88751C1.14792 8.62087 2.5656 10.0443 4.30469 10.0443H5.16563" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4.59167 6.88751H9.18335" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-qr-id">-</td>
+                    <td class="col-collector">Anna Andersen</td>
+                    <td class="col-cash">
+                        <input type="number" class="cash-input" value="1422"> kr.
+                    </td>
+                    <td class="col-next-year">
+                        <div class="checkbox-container">
+                            <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
+                        </div>
+                    </td>
+                    <td class="col-returned">Ja</td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">1422 kr.</td>
+                    <td class="col-route-id">-</td>
+                    <td class="col-min-side">
+                        <a href="#" class="action-link">
+                            Åbn
+                            <svg class="action-icon" viewBox="0 0 14 14">
+                                <path d="M8.60369 10.0443H9.47037C11.2037 10.0443 12.6271 8.62661 12.6271 6.88751C12.6271 5.15415 11.2095 3.73074 9.47037 3.73074H8.60369" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5.16563 3.73074H4.30469C2.5656 3.73074 1.14792 5.14841 1.14792 6.88751C1.14792 8.62087 2.5656 10.0443 4.30469 10.0443H5.16563" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4.59167 6.88751H9.18335" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-qr-id">-</td>
+                    <td class="col-collector">Lasse Holm</td>
+                    <td class="col-cash">
+                        <input type="number" class="cash-input" value="2342"> kr.
+                    </td>
+                    <td class="col-next-year">
+                        <div class="checkbox-container">
+                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                        </div>
+                    </td>
+                    <td class="col-returned">Ja</td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">2342 kr.</td>
+                    <td class="col-route-id">-</td>
+                    <td class="col-min-side">
+                        <a href="#" class="action-link">
+                            Åbn
+                            <svg class="action-icon" viewBox="0 0 14 14">
+                                <path d="M8.60369 10.0443H9.47037C11.2037 10.0443 12.6271 8.62661 12.6271 6.88751C12.6271 5.15415 11.2095 3.73074 9.47037 3.73074H8.60369" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5.16563 3.73074H4.30469C2.5656 3.73074 1.14792 5.14841 1.14792 6.88751C1.14792 8.62087 2.5656 10.0443 4.30469 10.0443H5.16563" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4.59167 6.88751H9.18335" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-qr-id">-</td>
+                    <td class="col-collector">Sofie Pedersen</td>
+                    <td class="col-cash">
+                        <input type="number" class="cash-input" value=""> kr.
+                    </td>
+                    <td class="col-next-year">
+                        <div class="checkbox-container">
+                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                        </div>
+                    </td>
+                    <td class="col-returned">Nej</td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">0 kr.</td>
+                    <td class="col-route-id">-</td>
+                    <td class="col-min-side">
+                        <a href="#" class="action-link">
+                            Åbn
+                            <svg class="action-icon" viewBox="0 0 14 14">
+                                <path d="M8.60369 10.0443H9.47037C11.2037 10.0443 12.6271 8.62661 12.6271 6.88751C12.6271 5.15415 11.2095 3.73074 9.47037 3.73074H8.60369" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5.16563 3.73074H4.30469C2.5656 3.73074 1.14792 5.14841 1.14792 6.88751C1.14792 8.62087 2.5656 10.0443 4.30469 10.0443H5.16563" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4.59167 6.88751H9.18335" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="footer-row">
+                    <td class="col-qr-id">Sum</td>
+                    <td class="col-collector"></td>
+                    <td class="col-cash">9870 kr.</td>
+                    <td class="col-next-year"></td>
+                    <td class="col-returned"></td>
+                    <td class="col-mobilepay">0 kr.</td>
+                    <td class="col-digital">0 kr.</td>
+                    <td class="col-total">9870 kr.</td>
+                    <td class="col-route-id"></td>
+                    <td class="col-min-side"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <script>
+        // Sorting functionality
+        let currentSort = { column: null, direction: null };
+
+        function sortTable(columnIndex, dataType) {
+            const table = document.querySelector('.fundraising-table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Determine sort direction
+            let direction = 'asc';
+            if (currentSort.column === columnIndex && currentSort.direction === 'asc') {
+                direction = 'desc';
+            }
+            
+            // Sort rows
+            rows.sort(function(a, b) {
+                let aVal, bVal;
+                
+                // Special handling for cash column - get value from input field
+                if (dataType === 'cash') {
+                    const aInput = a.cells[columnIndex].querySelector('.cash-input');
+                    const bInput = b.cells[columnIndex].querySelector('.cash-input');
+                    aVal = parseFloat(aInput.value) || 0;
+                    bVal = parseFloat(bInput.value) || 0;
+                } else {
+                    aVal = a.cells[columnIndex].textContent.trim();
+                    bVal = b.cells[columnIndex].textContent.trim();
+                    
+                    // Handle different data types
+                    if (dataType === 'number') {
+                        aVal = parseFloat(aVal.replace(/[^0-9.-]/g, '')) || 0;
+                        bVal = parseFloat(bVal.replace(/[^0-9.-]/g, '')) || 0;
+                    } else if (dataType === 'boolean') {
+                        aVal = aVal.toLowerCase() === 'ja' ? 1 : 0;
+                        bVal = bVal.toLowerCase() === 'ja' ? 1 : 0;
+                    } else {
+                        aVal = aVal.toLowerCase();
+                        bVal = bVal.toLowerCase();
+                    }
+                }
+                
+                if (direction === 'asc') {
+                    return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+                } else {
+                    return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+                }
+            });
+            
+            // Update table
+            rows.forEach(function(row) {
+                tbody.appendChild(row);
+            });
+            
+            // Update header indicators
+            document.querySelectorAll('th').forEach(function(th) {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            const header = document.querySelectorAll('th')[columnIndex];
+            header.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
+            
+            currentSort = { column: columnIndex, direction: direction };
+        }
+
+        // Checkbox functionality
+        function toggleCheckbox(checkbox) {
+            checkbox.classList.toggle('checked');
+        }
+
+        // Initialize event listeners when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click listeners to sortable headers
+            const headers = document.querySelectorAll('th.sortable');
+            headers.forEach(function(header, index) {
+                header.addEventListener('click', function() {
+                    const dataType = this.getAttribute('data-type');
+                    sortTable(index, dataType);
+                });
+            });
+
+            // Prevent form submission on input fields
+            const inputs = document.querySelectorAll('.cash-input');
+            inputs.forEach(function(input) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.blur();
+                    }
+                });
+            });
+
+            // Update totals when cash inputs change
+            const cashInputs = document.querySelectorAll('.cash-input');
+            cashInputs.forEach(function(input) {
+                input.addEventListener('input', function() {
+                    updateTotals();
+                });
+            });
+        });
+
+        // Function to update totals in footer
+        function updateTotals() {
+            const cashInputs = document.querySelectorAll('.cash-input');
+            let totalCash = 0;
+            
+            cashInputs.forEach(function(input) {
+                const value = parseFloat(input.value) || 0;
+                totalCash += value;
+                
+                // Update the total column for this row
+                const row = input.closest('tr');
+                const totalCell = row.querySelector('.col-total');
+                totalCell.textContent = value + ' kr.';
+            });
+            
+            // Update footer totals
+            const footerCash = document.querySelector('.footer-row .col-cash');
+            const footerTotal = document.querySelector('.footer-row .col-total');
+            
+            footerCash.textContent = totalCash + ' kr.';
+            footerTotal.textContent = totalCash + ' kr.';
+        }
+    </script>
+</body>
+</html>
